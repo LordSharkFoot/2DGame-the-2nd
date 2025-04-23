@@ -39,7 +39,7 @@ public class Player extends Entity{
         
         worldX = gp.tileSize * 13;
         worldY = gp.tileSize * 11;
-        speed = 4;
+        speed = 8;
         direction = "up";
     }
     public void getPlayerImage(){
