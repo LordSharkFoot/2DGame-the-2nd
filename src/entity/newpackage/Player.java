@@ -81,7 +81,7 @@ public class Player extends Entity{
         // Adjust speed for diagonal movement
         int moveSpeed = speed;
         if(movingDiagonally) {
-            moveSpeed = (int)(speed * 0.75);
+            moveSpeed = (int)(speed * 0.80);
         }
         
         // Check collision
