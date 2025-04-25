@@ -39,7 +39,7 @@ public class Player extends Entity{
         
         worldX = gp.tileSize * 13;
         worldY = gp.tileSize * 11;
-        speed = 8;
+        speed = 6;
         direction = "up";
     }
     public void getPlayerImage(){
@@ -60,51 +60,79 @@ public class Player extends Entity{
         }
     }
     public void update() {
+    if(keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
         
-        if(keyH.upPressed == true || keyH.downPressed == true ||
-                keyH.leftPressed == true || keyH.rightPressed == true) {
-            
-                           
-        if (keyH.upPressed == true) {
-            direction = "up";               
+        if(keyH.upPressed) {
+            direction = "up";
         }
-        else if(keyH.downPressed == true) {
-             direction = "down";               
+        if(keyH.downPressed) {
+            direction = "down";
         }
-        if (keyH.leftPressed == true) {
-             direction = "left";                 
+        if(keyH.leftPressed) {
+            direction = "left";
         }
-        else if(keyH.rightPressed == true) {
-             direction = "right";
-                 
-    }
-        //COLLISION CHECK
+        if(keyH.rightPressed) {
+            direction = "right";
+        }
+        
+        // Check if moving diagonally
+        boolean movingDiagonally = (keyH.upPressed || keyH.downPressed) && (keyH.leftPressed || keyH.rightPressed);
+        
+        // Adjust speed for diagonal movement
+        int moveSpeed = speed;
+        if(movingDiagonally) {
+            moveSpeed = (int)(speed * 0.80);
+        }
+        
+        // Check collision
         collisionOn = false;
         gp.dDetector.checkTile(this);
         
-        //IF FALSE PLAYER CAN MOVE
-        if(collisionOn == false) {
+        // If collision is false, player can move
+        if(!collisionOn) {
+            int originalWorldX = worldX;
+            int originalWorldY = worldY;
             
-            switch(direction) {
-                case "up":
-                    if(worldY - speed >= 0)
-                    worldY -= speed;  
-                    break;
-                case "down":
-                    if(worldY + speed < gp.maxWorldRow * gp.tileSize)
-                    worldY += speed;  
-                    break;
-                case "left":
-                    if(worldX - speed >= 0)
-                    worldX -= speed;
-                    break;
-                case "right":
-                    if(worldX + speed < gp.maxWorldCol * gp.tileSize)
-                    worldX += speed;
-                    break;
+            // Handle vertical movement
+            if(keyH.upPressed) {
+                if(worldY - moveSpeed >= 0) {
+                    worldY -= moveSpeed;
+                }
+            }
+            if(keyH.downPressed) {
+                if(worldY + moveSpeed < gp.maxWorldRow * gp.tileSize) {
+                    worldY += moveSpeed;
+                }
+            }
+            
+            // Check collision after vertical movement
+            collisionOn = false;
+            gp.dDetector.checkTile(this);
+            if(collisionOn) {
+                worldY = originalWorldY; // Reset Y position if collision
+            }
+            
+            // Handle horizontal movement
+            if(keyH.leftPressed) {
+                if(worldX - moveSpeed >= 0) {
+                    worldX -= moveSpeed;
+                }
+            }
+            if(keyH.rightPressed) {
+                if(worldX + moveSpeed < gp.maxWorldCol * gp.tileSize) {
+                    worldX += moveSpeed;
+                }
+            }
+            
+            // Check collision after horizontal movement
+            collisionOn = false;
+            gp.dDetector.checkTile(this);
+            if(collisionOn) {
+                worldX = originalWorldX; // Reset X position if collision
             }
         }
         
+        // Boundary checking
         if(worldX < 0) worldX = 0;
         if(worldY < 0) worldY = 0;
         if(worldX > gp.maxWorldCol * gp.tileSize - gp.tileSize) 
@@ -112,19 +140,14 @@ public class Player extends Entity{
         if(worldY > gp.maxWorldRow * gp.tileSize - gp.tileSize) 
             worldY = gp.maxWorldRow * gp.tileSize - gp.tileSize;
         
+        // Animation
         spriteCounter++;
         if(spriteCounter > 12) {
-            if(spriteNum == 1) {
-                spriteNum = 2;
-            }
-            else if (spriteNum == 2) {
-                spriteNum = 1;
-            }
+            spriteNum = (spriteNum == 1) ? 2 : 1;
             spriteCounter = 0;
         }
-            
-        }
-   }
+    }
+}
         
     public void draw(Graphics2D g2) {
         
