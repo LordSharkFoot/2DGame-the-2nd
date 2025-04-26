@@ -101,7 +101,7 @@ public class GamePanel extends JPanel implements Runnable{
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        g.drawImage(img, playerX, playerY, null);
+            g.drawImage(img.getSubimage(0, 0, 120, 80), playerX, playerY, null);
     }
 
 }
