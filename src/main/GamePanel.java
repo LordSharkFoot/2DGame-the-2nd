@@ -34,7 +34,7 @@ public class GamePanel extends JPanel implements Runnable{
     int playerX = 100;
     int playerY = 100;
     int playerSpeed = 4;
-    private BufferedImage img,subImg;
+    private BufferedImage img;
     
     public GamePanel() {
         
@@ -45,6 +45,16 @@ public class GamePanel extends JPanel implements Runnable{
         this.setDoubleBuffered(true); // rendering performance
         this.addKeyListener(keyH);
         this.setFocusable(true);
+    }
+    
+    private void importImg() {
+       InputStream is = getClass().getResourceAsStream("/Run.png");
+       
+        try {
+            img = ImageIO.read(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     public void startGameThread() {
@@ -91,17 +101,7 @@ public class GamePanel extends JPanel implements Runnable{
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-       subImg =img.getSubimage(0, 0, 32, 64);
-       g.drawImage(subImg, 0, 0, 64, 40, null);
+        g.drawImage(img, playerX, playerY, null);
     }
 
-    private void importImg() {
-       InputStream is = getClass().getResourceAsStream("/Run.png");
-       
-        try {
-            img = ImageIO.read(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
