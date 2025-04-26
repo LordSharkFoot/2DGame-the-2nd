@@ -3,9 +3,12 @@ package main;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 public class GamePanel extends JPanel implements Runnable{
@@ -25,13 +28,18 @@ public class GamePanel extends JPanel implements Runnable{
     
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
+  
     
-    // SETS PLAYER'S DEFAULT POSITION
+    //SETS PLAYER'S DEFAULT POSITION
     int playerX = 100;
     int playerY = 100;
     int playerSpeed = 4;
+    private BufferedImage img,subImg;
     
     public GamePanel() {
+        
+       importImg();
+        
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.black);
         this.setDoubleBuffered(true); // rendering performance
@@ -82,9 +90,18 @@ public class GamePanel extends JPanel implements Runnable{
     }
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D)g;
-        g2.setColor(Color.white);
-        g2.fillRect(playerX, playerY, tileSize, tileSize);
-        g2.dispose();
+        
+       subImg =img.getSubimage(0, 0, 32, 64);
+       g.drawImage(subImg, 0, 0, 64, 40, null);
+    }
+
+    private void importImg() {
+       InputStream is = getClass().getResourceAsStream("/Run.png");
+       
+        try {
+            img = ImageIO.read(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
