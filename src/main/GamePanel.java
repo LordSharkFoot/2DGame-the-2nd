@@ -36,7 +36,7 @@ public class GamePanel extends JPanel implements Runnable{
     int playerSpeed = 4;
     private BufferedImage img;
     
-    public GamePanel() {
+    public GamePanel() throws IOException {
         
        importImg();
         
@@ -47,13 +47,19 @@ public class GamePanel extends JPanel implements Runnable{
         this.setFocusable(true);
     }
     
-    private void importImg() {
+    private void importImg() throws IOException {
        InputStream is = getClass().getResourceAsStream("/Run.png");
        
         try {
             img = ImageIO.read(is);
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try{
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
     
