@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+import static utilz.Constants.PlayerConstants.*;
+
 public class GamePanel extends JPanel implements Runnable{
     
     // SCREEN SETTINGS
@@ -33,12 +35,18 @@ public class GamePanel extends JPanel implements Runnable{
     //SETS PLAYER'S DEFAULT POSITION
     int playerX = 100;
     int playerY = 100;
-    int playerSpeed = 4;
+    int playerSpeed = 4; // You can change this value to any speed
+    
     private BufferedImage img;
+    private BufferedImage[][] animations; // THIS IS WHERE YOU CAN ADD MORE ANIMATIONS
+    private int aniTick, aniIndex, aniSpeed = 4; // YOU CAN CHANGE THE ANIMATION SPEED HERE
+    
+    private int playerAction = IDLE;
     
     public GamePanel() throws IOException {
         
-       importImg();
+        importImg();
+        loadAnimations();
         
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.black);
@@ -48,7 +56,7 @@ public class GamePanel extends JPanel implements Runnable{
     }
     
     private void importImg() throws IOException {
-       InputStream is = getClass().getResourceAsStream("/Run.png");
+       InputStream is = getClass().getResourceAsStream("/sprite_sheet.png");
        
         try {
             img = ImageIO.read(is);
@@ -61,6 +69,14 @@ public class GamePanel extends JPanel implements Runnable{
                 e.printStackTrace();
             }
         }
+    }
+    
+    private void loadAnimations() {
+        animations = new BufferedImage[4][10];
+        
+        for(int j = 0; j < animations.length; j++)
+            for(int i = 0;i < animations[j].length; i++)
+                animations[j][i] = img.getSubimage(i*120,j*80, 120, 80);
     }
     
     public void startGameThread() {
@@ -90,24 +106,63 @@ public class GamePanel extends JPanel implements Runnable{
         }
         
     }
+    
     public void update() {
-        if(keyH.upPressed == true) {
-            playerY -= playerSpeed;
+        // Calculate the direction of movement
+        int dx = 0;
+        int dy = 0;
+        
+        if(keyH.upPressed) {
+            dy -= 1;
         }
-        if(keyH.downPressed == true) {
-            playerY += playerSpeed;
+        if(keyH.downPressed) {
+            dy += 1;
         }
-        if(keyH.leftPressed == true) {
-            playerX -= playerSpeed;
+        if(keyH.leftPressed) {
+            dx -= 1;
         }
-        if(keyH.rightPressed == true) {
-            playerX += playerSpeed;
+        if(keyH.rightPressed) {
+            dx += 1;
+        }
+        
+        // Apply movement if there's any direction input
+        if(dx != 0 || dy != 0) {
+            // Normalize for diagonal movement
+            if(dx != 0 && dy != 0) {
+                // Calculate normalized vector length
+                double length = Math.sqrt(dx * dx + dy * dy);
+                // Apply speed after normalization
+                playerX += (int)Math.round((dx / length) * playerSpeed);
+                playerY += (int)Math.round((dy / length) * playerSpeed);
+            } else {
+                // Regular cardinal movement
+                playerX += dx * playerSpeed;
+                playerY += dy * playerSpeed;
+            }
+            
+            playerAction = RUNNING;
+        } else {
+            playerAction = IDLE;
         }
     }
+    
+    private void updateAnimationTick() {
+        aniTick++;
+        if(aniTick >= aniSpeed) {
+            aniTick = 0;
+            aniIndex++;
+            if(aniIndex >= GetSpriteAmount(playerAction)) {
+                aniIndex = 0;
+            }
+        }
+    }
+    
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        
-            g.drawImage(img.getSubimage(0, 0, 120, 80), playerX, playerY, null);
+            //g.drawImage(img.getSubimage(0, 0, 120, 80), playerX, playerY, null);
+            updateAnimationTick();
+            
+            //ANIMATIONS
+            g.drawImage(animations[playerAction][aniIndex], playerX, playerY, null); 
     }
-
 }
