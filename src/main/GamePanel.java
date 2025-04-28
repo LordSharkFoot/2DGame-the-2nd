@@ -3,6 +3,7 @@ package main;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+import tiles.TileManager;
 
 import static utilz.Constants.PlayerConstants.*;
 
@@ -19,15 +21,16 @@ public class GamePanel extends JPanel implements Runnable{
     final int originalTileSize = 16; // 16x16 tiles
     final int scale = 3; // scaling the game
     
-    final int tileSize = originalTileSize * scale; //48x48 tiles 
-    final int maxScreenCol = 16;
-    final int maxScreenRow = 12;
-    final int screenWidth = tileSize * maxScreenCol;
-    final int screenHeight = tileSize * maxScreenRow;
+    public final int tileSize = originalTileSize * scale; //48x48 tiles 
+    public final int maxScreenCol = 16;
+    public final int maxScreenRow = 12;
+    public final int screenWidth = tileSize * maxScreenCol;
+    public final int screenHeight = tileSize * maxScreenRow;
     
     // FPS
     int FPS = 60;
     
+    TileManager tileM = new TileManager(this);
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
   
@@ -159,9 +162,15 @@ public class GamePanel extends JPanel implements Runnable{
     
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        
+             Graphics2D g2 = (Graphics2D)g;
+        
+             tileM.draw(g2);
+        
             //g.drawImage(img.getSubimage(0, 0, 120, 80), playerX, playerY, null);
             updateAnimationTick();
             
+           
             //ANIMATIONS
             g.drawImage(animations[playerAction][aniIndex], playerX, playerY, null); 
     }
