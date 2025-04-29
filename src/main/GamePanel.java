@@ -172,6 +172,6 @@ public class GamePanel extends JPanel implements Runnable{
             
            
             //ANIMATIONS
-            g.drawImage(animations[playerAction][aniIndex], playerX, playerY, null); 
+            g.drawImage(animations[playerAction][aniIndex], playerX, playerY, 180, 120, null); 
     }
 }
