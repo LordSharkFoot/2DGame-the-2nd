@@ -4,11 +4,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import tiles.TileManager;
@@ -35,6 +34,10 @@ public class GamePanel extends JPanel implements Runnable{
     Thread gameThread;
   
     
+    public Rectangle solidArea;
+    public int solidAreaDefaultX;
+    public int solidAreaDefaultY;
+    
     //SETS PLAYER'S DEFAULT POSITION
     int playerX = 100;
     int playerY = 100;
@@ -51,9 +54,17 @@ public class GamePanel extends JPanel implements Runnable{
         importImg();
         loadAnimations();
         
+        // Initialize player collision (solid area)
+        // Smaller collision box positioned at the character's feet
+        int boxWidth = 30; // Smaller width than character
+        int boxHeight = 20; // Small height for feet area
+        
+        solidAreaDefaultX = (180 - boxWidth) / 2; // Center horizontally
+        solidAreaDefaultY = 120 - boxHeight; // Position at the bottom of the sprite
+        solidArea = new Rectangle(solidAreaDefaultX, solidAreaDefaultY, boxWidth, boxHeight);
+        
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.black);
-        this.setDoubleBuffered(true); // rendering performance
         this.addKeyListener(keyH);
         this.setFocusable(true);
     }
@@ -130,22 +141,69 @@ public class GamePanel extends JPanel implements Runnable{
         
         // Apply movement if there's any direction input
         if(dx != 0 || dy != 0) {
-            // Normalize for diagonal movement
-            if(dx != 0 && dy != 0) {
-                // Calculate normalized vector length
-                double length = Math.sqrt(dx * dx + dy * dy);
-                // Apply speed after normalization
-                playerX += (int)Math.round((dx / length) * playerSpeed);
-                playerY += (int)Math.round((dy / length) * playerSpeed);
-            } else {
-                // Regular cardinal movement
-                playerX += dx * playerSpeed;
-                playerY += dy * playerSpeed;
-            }
+            playerAction = RUNNING; // Set player to running animation
             
-            playerAction = RUNNING;
+            // Check collision and move player
+            boolean collisionOn = false;
+            
+            // Set solidArea to player's current position
+            solidArea.x = playerX + solidAreaDefaultX;
+            solidArea.y = playerY + solidAreaDefaultY;
+            
+            // Create a temp collision box for checking potential movement
+            Rectangle tempCollision = new Rectangle(solidArea);
+            
+            // Check collision in potential new position
+            if (dx != 0 && dy != 0) {
+                // Diagonal movement - normalize speed
+                double length = Math.sqrt(dx * dx + dy * dy);
+                int newX = (int)(dx / length * playerSpeed);
+                int newY = (int)(dy / length * playerSpeed);
+                
+                // Check X direction
+                tempCollision.x = solidArea.x + newX;
+                collisionOn = tileM.checkTileCollision(tempCollision);
+                
+                if (!collisionOn) {
+                    // If no collision, move X
+                    playerX += newX;
+                }
+                
+                // Check Y direction
+                tempCollision.x = solidArea.x; // Reset X to current position
+                tempCollision.y = solidArea.y + newY;
+                collisionOn = tileM.checkTileCollision(tempCollision);
+                
+                if (!collisionOn) {
+                    // If no collision, move Y
+                    playerY += newY;
+                }
+            } else {
+                // Cardinal movement
+                if (dx != 0) {
+                    // Check X direction
+                    tempCollision.x = solidArea.x + (dx * playerSpeed);
+                    collisionOn = tileM.checkTileCollision(tempCollision);
+                    
+                    if (!collisionOn) {
+                        // If no collision, move X
+                        playerX += dx * playerSpeed;
+                    }
+                }
+                
+                if (dy != 0) {
+                    // Check Y direction
+                    tempCollision.y = solidArea.y + (dy * playerSpeed);
+                    collisionOn = tileM.checkTileCollision(tempCollision);
+                    
+                    if (!collisionOn) {
+                        // If no collision, move Y
+                        playerY += dy * playerSpeed;
+                    }
+                }
+            }
         } else {
-            playerAction = IDLE;
+            playerAction = IDLE; // Set player to idle animation
         }
     }
     
@@ -163,15 +221,16 @@ public class GamePanel extends JPanel implements Runnable{
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-             Graphics2D g2 = (Graphics2D)g;
+        Graphics2D g2 = (Graphics2D)g;
         
-             tileM.draw(g2);
+        tileM.draw(g2);
         
-            //g.drawImage(img.getSubimage(0, 0, 120, 80), playerX, playerY, null);
-            updateAnimationTick();
-            
-           
-            //ANIMATIONS
-            g.drawImage(animations[playerAction][aniIndex], playerX, playerY, 180, 120, null); 
+        updateAnimationTick();
+        
+        //ANIMATIONS
+        g.drawImage(animations[playerAction][aniIndex], playerX, playerY, 180, 120, null);
+        
+      
+        g2.dispose();
     }
 }
